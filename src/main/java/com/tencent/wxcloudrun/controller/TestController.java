@@ -21,7 +21,7 @@ import java.util.Map;
 public class TestController {
     @GetMapping("hello")
     public ApiResponse hello(@RequestHeader Map<String, String> header){
-        log.info("headers",header);
+        System.out.println(header);
         return ApiResponse.ok("hello world");
     }
 }
