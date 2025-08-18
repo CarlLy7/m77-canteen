@@ -1,0 +1,36 @@
+package com.tencent.wxcloudrun.domain.vo;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+/**
+ * @description:
+ * @author: carl
+ * @createDate: 2025-08-18 22:27
+ * @Since: 1.0
+ */
+@Data
+public class SkuInfoVo {
+    private Integer skuId;
+
+    /**
+     * sku名称
+     */
+    private String skuName;
+
+    /**
+     * sku价格
+     */
+    private BigDecimal price;
+
+    /**
+     * sku图片链接
+     */
+    private String imageUrl;
+
+    /**
+     * 商品id
+     */
+    private Integer productId;
+}
