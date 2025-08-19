@@ -1,6 +1,7 @@
 package com.tencent.wxcloudrun.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tencent.wxcloudrun.domain.param.UserInfoSaveOrUpdateParam;
 import com.tencent.wxcloudrun.domain.vo.UserInfoVo;
@@ -29,11 +30,11 @@ public class UserServiceImpl implements UserService {
     public UserInfoVo getUserInfoByOpenId(String openId) {
         BbUser bbUser = bbUserService.getOne(Wrappers.lambdaQuery(BbUser.class)
                 .eq(BbUser::getOpenId, openId));
-        if (Objects.isNull(bbUser)){
+        if (Objects.isNull(bbUser)) {
             return null;
         }
         UserInfoVo userInfoVo = new UserInfoVo();
-        BeanUtil.copyProperties(bbUser,userInfoVo);
+        BeanUtil.copyProperties(bbUser, userInfoVo);
         return userInfoVo;
     }
 
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
         BbUser bbUser = bbUserService.getOne(Wrappers.lambdaQuery(BbUser.class)
                 .eq(BbUser::getOpenId, openId));
         //新增
-        if (Objects.isNull(bbUser)){
+        if (Objects.isNull(bbUser)) {
             BbUser saveUserInfo = new BbUser();
             saveUserInfo.setOpenId(openId);
             saveUserInfo.setNickName(param.getNickName());
@@ -56,17 +57,17 @@ public class UserServiceImpl implements UserService {
             return userInfoVo;
         }
         //修改
-        BbUser updateUserInfo = new BbUser();
-        updateUserInfo.setId(bbUser.getId());
-        updateUserInfo.setOpenId(openId);
-        updateUserInfo.setNickName(param.getNickName());
-        updateUserInfo.setAvatarUrl(param.getAvatarUrl());
-        bbUserService.updateById(updateUserInfo);
+        bbUserService.update(Wrappers.lambdaUpdate(BbUser.class)
+                .eq(BbUser::getId, bbUser.getId())
+                .eq(BbUser::getOpenId, openId)
+                .set(StrUtil.isNotBlank(param.getAvatarUrl()), BbUser::getAvatarUrl, param.getAvatarUrl())
+                .set(StrUtil.isNotBlank(param.getNickName()), BbUser::getNickName, param.getNickName()));
+        BbUser user = bbUserService.getById(bbUser.getId());
         UserInfoVo userInfoVo = new UserInfoVo();
         userInfoVo.setId(bbUser.getId());
         userInfoVo.setOpenId(openId);
-        userInfoVo.setNickName(updateUserInfo.getNickName());
-        userInfoVo.setAvatarUrl(updateUserInfo.getAvatarUrl());
+        userInfoVo.setNickName(user.getNickName());
+        userInfoVo.setAvatarUrl(user.getAvatarUrl());
         return userInfoVo;
     }
 }
