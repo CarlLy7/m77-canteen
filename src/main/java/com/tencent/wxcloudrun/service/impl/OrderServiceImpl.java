@@ -57,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
             bbOrderDtl.setProductId(item.getProductId());
             bbOrderDtl.setSkuId(item.getSkuId());
             bbOrderDtl.setOrderNo(orderNo);
-            bbOrderDtl.setProductName(item.getProductName());
+            bbOrderDtl.setSkuName(item.getSkuName());
             bbOrderDtl.setCount(item.getCountNum());
             bbOrderDtl.setImageUrl(item.getImageUrl());
             orderDtls.add(bbOrderDtl);

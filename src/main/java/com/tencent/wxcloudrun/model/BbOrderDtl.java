@@ -51,6 +51,11 @@ public class BbOrderDtl implements Serializable {
      */
     private String imageUrl;
 
+    /**
+     * 规格名称
+     */
+    private String skuName;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
