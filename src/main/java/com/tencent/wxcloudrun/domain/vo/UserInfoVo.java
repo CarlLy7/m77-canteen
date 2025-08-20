@@ -23,8 +23,4 @@ public class UserInfoVo {
      */
     private String avatarUrl;
 
-    /**
-     * 文件id
-     */
-    private Integer fileId;
 }

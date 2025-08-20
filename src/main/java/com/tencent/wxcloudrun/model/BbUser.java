@@ -35,10 +35,6 @@ public class BbUser implements Serializable {
      */
     private String avatarUrl;
 
-    /**
-     * 文件id
-     */
-    private String fileId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

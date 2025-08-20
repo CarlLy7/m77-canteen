@@ -47,12 +47,10 @@ public class UserServiceImpl implements UserService {
             saveUserInfo.setOpenId(openId);
             saveUserInfo.setNickName(param.getNickName());
             saveUserInfo.setAvatarUrl(param.getAvatarUrl());
-            saveUserInfo.setFileId(param.getFileId());
             bbUserService.save(saveUserInfo);
             UserInfoVo userInfoVo = new UserInfoVo();
             userInfoVo.setId(saveUserInfo.getId());
             userInfoVo.setNickName(saveUserInfo.getNickName());
-            userInfoVo.setFileId(saveUserInfo.getFileId());
             userInfoVo.setAvatarUrl(saveUserInfo.getAvatarUrl());
             return userInfoVo;
         }
@@ -67,7 +65,6 @@ public class UserServiceImpl implements UserService {
         userInfoVo.setId(bbUser.getId());
         userInfoVo.setNickName(updateUserInfo.getNickName());
         userInfoVo.setAvatarUrl(updateUserInfo.getAvatarUrl());
-        userInfoVo.setFileId(updateUserInfo.getFileId());
         return userInfoVo;
     }
 }
