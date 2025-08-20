@@ -1,5 +1,6 @@
 package com.tencent.wxcloudrun.service;
 
+import com.tencent.wxcloudrun.domain.param.ProductQueryParam;
 import com.tencent.wxcloudrun.domain.vo.ProductVo;
 
 import java.util.List;
@@ -11,5 +12,5 @@ import java.util.List;
  * @Since: 1.0
  */
 public interface ProductService {
-    List<ProductVo> getProduct();
+    List<ProductVo> getProduct(ProductQueryParam param);
 }

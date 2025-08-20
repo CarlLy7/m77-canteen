@@ -42,6 +42,8 @@ public class BbProduct implements Serializable {
      */
     private Integer categoryId;
 
+    private Integer sort;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

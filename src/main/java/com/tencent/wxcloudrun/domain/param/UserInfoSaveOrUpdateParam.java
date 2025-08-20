@@ -19,4 +19,9 @@ public class UserInfoSaveOrUpdateParam {
      * 头像url
      */
     private String avatarUrl;
+
+    /**
+     * 文件id
+     */
+    private String fileId;
 }

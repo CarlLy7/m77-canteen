@@ -1,6 +1,7 @@
 package com.tencent.wxcloudrun.controller;
 
 import com.tencent.wxcloudrun.config.ApiResponse;
+import com.tencent.wxcloudrun.domain.param.ProductQueryParam;
 import com.tencent.wxcloudrun.domain.vo.ProductVo;
 import com.tencent.wxcloudrun.service.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,9 +28,9 @@ public class ProductController {
      * @return
      */
     @GetMapping("/getProduct")
-    public ApiResponse getProduct(){
+    public ApiResponse getProduct(ProductQueryParam param){
         //TODO 后续可能要根据商家进行区分
-        List<ProductVo> list=productService.getProduct();
+        List<ProductVo> list=productService.getProduct(param);
         return ApiResponse.ok(list);
     }
 }
