@@ -1,8 +1,8 @@
 package com.tencent.wxcloudrun.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.tencent.wxcloudrun.domain.convert.ProductSkuConvert;
 import com.tencent.wxcloudrun.domain.vo.ProductSkuVo;
 import com.tencent.wxcloudrun.domain.vo.SkuInfoVo;
 import com.tencent.wxcloudrun.model.BbProduct;
@@ -41,11 +41,11 @@ public class ProductSkuServiceImpl implements ProductSkuService {
         }
         BbProduct product = bbProductService.getById(productId);
         Assert.notNull(product, "商品不存在");
-        List<SkuInfoVo> skuInfoVos = BeanUtil.copyToList(skuList, SkuInfoVo.class);
+        List<SkuInfoVo> skuInfoVos = ProductSkuConvert.INSTANCE.bbProductSkusToSkuInfoVos(skuList);
         ProductSkuVo productSkuVo = new ProductSkuVo();
         productSkuVo.setProductId(productId);
         productSkuVo.setProductName(product.getProductName());
-        productSkuVo.setSkuInfos(skuInfoVos);
+        productSkuVo.setSkus(skuInfoVos);
         return productSkuVo;
     }
 }

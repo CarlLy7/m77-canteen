@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  */
 @Data
 public class SkuInfoVo {
-    private Integer skuId;
+    private Integer id;
 
     /**
      * sku名称
      */
-    private String skuName;
+    private String name;
 
     /**
      * sku价格

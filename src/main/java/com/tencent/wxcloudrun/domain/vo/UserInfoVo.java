@@ -26,5 +26,5 @@ public class UserInfoVo {
     /**
      * 文件id
      */
-    private String fileId;
+    private Integer fileId;
 }

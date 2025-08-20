@@ -16,5 +16,5 @@ public class ProductSkuVo {
 
     private String productName;
 
-    private List<SkuInfoVo> skuInfos;
+    private List<SkuInfoVo> skus;
 }
