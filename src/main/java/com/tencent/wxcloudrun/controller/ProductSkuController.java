@@ -28,7 +28,7 @@ public class ProductSkuController {
      * @return
      */
     @GetMapping("/getSkuInfoByProductId")
-    public ApiResponse getSkuInfoByProductId(@RequestParam Integer productId){
+    public ApiResponse getSkuInfoByProductId(@RequestParam(value="productId") Integer productId){
         ProductSkuVo productSkuVo=productSkuService.getSkuInfoByProductId(productId);
         return ApiResponse.ok(productSkuVo);
     }
