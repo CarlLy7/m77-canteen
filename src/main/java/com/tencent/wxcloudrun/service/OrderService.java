@@ -1,5 +1,10 @@
 package com.tencent.wxcloudrun.service;
 
+import com.tencent.wxcloudrun.domain.param.OrderCreateParam;
+import com.tencent.wxcloudrun.domain.vo.OrderVo;
+
+import java.util.List;
+
 /**
  * @description:
  * @author: carl
@@ -7,4 +12,7 @@ package com.tencent.wxcloudrun.service;
  * @Since: 1.0
  */
 public interface OrderService {
+    void createOrder(String openId,OrderCreateParam param);
+
+    List<OrderVo> getOrder(String openId);
 }
