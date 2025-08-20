@@ -23,7 +23,7 @@ public class ProductSkuController {
     private ProductSkuService productSkuService;
 
     /**
-     * 通过商品id获取对应的sku列表
+     * 通过商品id获取对应的sku列表,,,,,
      * @param productId
      * @return
      */
