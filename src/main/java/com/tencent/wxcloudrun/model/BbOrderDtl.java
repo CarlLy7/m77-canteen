@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 
@@ -55,6 +56,8 @@ public class BbOrderDtl implements Serializable {
      * 规格名称
      */
     private String skuName;
+
+    private BigDecimal price;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

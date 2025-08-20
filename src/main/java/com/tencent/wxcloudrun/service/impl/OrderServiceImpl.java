@@ -60,6 +60,8 @@ public class OrderServiceImpl implements OrderService {
             bbOrderDtl.setSkuName(item.getSkuName());
             bbOrderDtl.setCount(item.getCountNum());
             bbOrderDtl.setImageUrl(item.getImageUrl());
+            bbOrderDtl.setPrice(item.getPrice());
+            bbOrderDtl.setProductName(item.getProductName());
             orderDtls.add(bbOrderDtl);
         }
         bbOrderService.save(bbOrder);
