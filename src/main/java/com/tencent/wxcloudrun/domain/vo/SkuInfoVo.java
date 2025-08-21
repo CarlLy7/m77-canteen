@@ -2,8 +2,6 @@ package com.tencent.wxcloudrun.domain.vo;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @description:
  * @author: carl
@@ -22,7 +20,7 @@ public class SkuInfoVo {
     /**
      * sku价格
      */
-    private BigDecimal price;
+    private String price;
 
     /**
      * sku图片链接

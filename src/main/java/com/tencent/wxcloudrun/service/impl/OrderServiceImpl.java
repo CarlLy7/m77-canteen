@@ -7,6 +7,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tencent.wxcloudrun.domain.convert.OrderConvert;
+import com.tencent.wxcloudrun.domain.param.CreateScoreParam;
 import com.tencent.wxcloudrun.domain.param.OrderCreateParam;
 import com.tencent.wxcloudrun.domain.param.OrderItemParam;
 import com.tencent.wxcloudrun.domain.vo.OrderDtlVo;
@@ -19,12 +20,14 @@ import com.tencent.wxcloudrun.service.base.BbOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +89,7 @@ public class OrderServiceImpl implements OrderService {
             OrderVo orderVo = new OrderVo();
             orderVo.setOrderNo(bbOrder.getOrderNo());
             orderVo.setCreateTime(bbOrder.getCreateTime());
+            orderVo.setScore(bbOrder.getScore());
             orderNoList.add(bbOrder.getOrderNo());
             result.add(orderVo);
         }
@@ -107,6 +111,21 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return result;
+    }
+
+    @Override
+    public void createScore(String openId, CreateScoreParam param) {
+        BbOrder one = bbOrderService.getOne(Wrappers.lambdaQuery(BbOrder.class)
+                .eq(BbOrder::getCreatorBy, openId)
+                .eq(BbOrder::getOrderNo, param.getOrderNo()));
+        Assert.notNull(one,"订单不存在");
+        if (!Objects.nonNull(one.getScore())){
+            throw new RuntimeException("不可以重复评分");
+        }
+        bbOrderService.update(Wrappers.lambdaUpdate(BbOrder.class)
+                .eq(BbOrder::getCreatorBy,openId)
+                .eq(BbOrder::getOrderNo,param.getOrderNo())
+                .set(BbOrder::getScore,param.getScore()));
     }
 
 

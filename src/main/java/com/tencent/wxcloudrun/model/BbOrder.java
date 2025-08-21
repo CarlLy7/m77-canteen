@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -28,14 +29,19 @@ public class BbOrder implements Serializable {
     private String orderNo;
 
     /**
-     * 
+     *  创建时间
      */
     private LocalDateTime createTime;
 
     /**
-     * 
+     *  创建人
      */
     private String creatorBy;
+
+    /**
+     * 评分
+     */
+    private BigDecimal score;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
