@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
                 .eq(BbOrder::getCreatorBy, openId)
                 .eq(BbOrder::getOrderNo, param.getOrderNo()));
         Assert.notNull(one,"订单不存在");
-        if (!Objects.nonNull(one.getScore())){
+        if (Objects.nonNull(one.getScore())){
             throw new RuntimeException("不可以重复评分");
         }
         bbOrderService.update(Wrappers.lambdaUpdate(BbOrder.class)
