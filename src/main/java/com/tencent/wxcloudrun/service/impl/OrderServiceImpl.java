@@ -159,12 +159,13 @@ public class OrderServiceImpl implements OrderService {
         body.set("miniprogram_state","developer");
         body.set("lang","zh_CN");
         JSONObject data=new JSONObject();
-        data.set("character_string1","dingdanhaoma111");
+        data.set("character_string1","1224213132");
         data.set("thing2","测试");
         data.set("time4","15:01");
         data.set("phrase5","已接单");
         data.set("thing9","测试");
         body.set("data",data);
+        log.info("请求数据=[{}]",body.toString());
         HttpResponse response = HttpRequest.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send")
                 .body(body.toString())
                 .execute();
