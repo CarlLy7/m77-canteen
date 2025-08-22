@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                pushMessage(openId, orderNo, param.getItems().get(0), LocalDateTime.now());
+                pushMessage(openId, orderNo, param.getItems().get(0));
             }
         });
     }
@@ -99,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
      * @param orderItem
      * @param createTime
      */
-    private void pushMessage(String openId, String orderNo, OrderItemParam orderItem, LocalDateTime createTime) {
+    private void pushMessage(String openId, String orderNo, OrderItemParam orderItem) {
         JSONObject body = new JSONObject();
         body.set("template_id", templateId);
         body.set("touser", openId);
@@ -110,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
         data.set("character_string1", new JSONObject().set("value", orderNo));
         String content = orderItem.getProductName() + "x" + orderItem.getCountNum();
         data.set("thing2", new JSONObject().set("value", content));
-        data.set("time4", new JSONObject().set("value", createTime.toString().replaceFirst("T"," ")));
+        data.set("time4", new JSONObject().set("value", DateUtil.format(DateUtil.date(), "yyyy年MM月dd日 HH:mm")));
         data.set("phrase5", new JSONObject().set("value", "下单成功"));
         data.set("thing9", new JSONObject().set("value", "宝宝肚肚打雷了"));
         body.set("data", data);
