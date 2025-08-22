@@ -156,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
         HttpRequest request = HttpRequest.get("/wxaapi/newtmpl/gettemplate");
         HttpResponse httpResponse = request.execute();
         JSONObject body = JSONUtil.parseObj(httpResponse.body());
-        log.info("getMessageTemplateList result= [{}]",body);
+        System.out.println(httpResponse.body());
     }
 
 
