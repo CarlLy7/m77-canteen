@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONObject;
@@ -13,6 +14,7 @@ import com.tencent.wxcloudrun.domain.convert.OrderConvert;
 import com.tencent.wxcloudrun.domain.param.CreateScoreParam;
 import com.tencent.wxcloudrun.domain.param.OrderCreateParam;
 import com.tencent.wxcloudrun.domain.param.OrderItemParam;
+import com.tencent.wxcloudrun.domain.param.OrderQueryParam;
 import com.tencent.wxcloudrun.domain.vo.OrderDtlVo;
 import com.tencent.wxcloudrun.domain.vo.OrderVo;
 import com.tencent.wxcloudrun.model.BbOrder;
@@ -20,7 +22,6 @@ import com.tencent.wxcloudrun.model.BbOrderDtl;
 import com.tencent.wxcloudrun.service.OrderService;
 import com.tencent.wxcloudrun.service.base.BbOrderDtlService;
 import com.tencent.wxcloudrun.service.base.BbOrderService;
-import com.tencent.wxcloudrun.service.base.BbUserSubscribeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,21 +56,18 @@ public class OrderServiceImpl implements OrderService {
     @Value("${order.createTemplateId}")
     private String templateId;
 
-    @Resource
-    private BbUserSubscribeService bbUserSubscribeService;
-
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrder(String openId,OrderCreateParam param) {
+    public void createOrder(String openId, OrderCreateParam param) {
         List<OrderItemParam> items = param.getItems();
         BbOrder bbOrder = new BbOrder();
         String orderNo = IdUtil.getSnowflakeNextIdStr();
         bbOrder.setOrderNo(orderNo);
         bbOrder.setCreateTime(LocalDateTime.now());
         bbOrder.setCreatorBy(openId);
-        List<BbOrderDtl> orderDtls=new ArrayList<>();
+        List<BbOrderDtl> orderDtls = new ArrayList<>();
         for (OrderItemParam item : items) {
             BbOrderDtl bbOrderDtl = new BbOrderDtl();
             bbOrderDtl.setProductId(item.getProductId());
@@ -88,25 +86,58 @@ public class OrderServiceImpl implements OrderService {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                pushMessage(openId);
+                pushMessage(openId, orderNo, param.getItems().get(0), LocalDateTime.now());
             }
         });
     }
 
+    /**
+     * 下单成功消息推送
+     *
+     * @param openId
+     * @param orderNo
+     * @param orderItem
+     * @param createTime
+     */
+    private void pushMessage(String openId, String orderNo, OrderItemParam orderItem, LocalDateTime createTime) {
+        JSONObject body = new JSONObject();
+        body.set("template_id", templateId);
+        body.set("touser", openId);
+        body.set("miniprogram_state", "developer");
+        body.set("page","/pages/order/order?orderNo="+orderNo);
+        body.set("lang", "zh_CN");
+        JSONObject data = new JSONObject();
+        data.set("character_string1", new JSONObject().set("value", orderNo));
+        String content = orderItem.getProductName() + "x" + orderItem.getCountNum();
+        data.set("thing2", new JSONObject().set("value", content));
+        data.set("time4", new JSONObject().set("value", createTime.toString().replaceFirst("T"," ")));
+        data.set("phrase5", new JSONObject().set("value", "下单成功"));
+        data.set("thing9", new JSONObject().set("value", "宝宝肚肚打雷了"));
+        body.set("data", data);
+        log.info("请求数据=[{}]", body.toString());
+        HttpResponse response = HttpRequest.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send")
+                .body(body.toString())
+                .execute();
+        log.info("pushMessage result= [{}]", response.body());
+
+        System.out.println(response.body());
+    }
+
     @Override
-    public List<OrderVo> getOrder(String openId) {
+    public List<OrderVo> getOrder(String openId, OrderQueryParam param) {
         String today = DateUtil.today();
         DateTime oneMonthBefore = DateUtil.beginOfMonth(DateUtil.date());
-        QueryWrapper<BbOrder> queryWrapper=new QueryWrapper<>();
-        queryWrapper.eq("creator_by",openId);
-        queryWrapper.ge("DATE_FORMAT(create_time,'%Y-%m-%d')",oneMonthBefore);
-        queryWrapper.le("DATE_FORMAT(create_time,'%Y-%m-%d')",today);
+        QueryWrapper<BbOrder> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("creator_by", openId);
+        queryWrapper.ge("DATE_FORMAT(create_time,'%Y-%m-%d')", oneMonthBefore);
+        queryWrapper.le("DATE_FORMAT(create_time,'%Y-%m-%d')", today);
+        queryWrapper.eq(StrUtil.isNotBlank(param.getOrderNo()),"order_no",param.getOrderNo());
         List<BbOrder> orderList = bbOrderService.list(queryWrapper);
-        if (CollUtil.isEmpty(orderList)){
+        if (CollUtil.isEmpty(orderList)) {
             return new ArrayList<>();
         }
-        List<OrderVo> result=new ArrayList<>();
-        List<String> orderNoList=new ArrayList<>();
+        List<OrderVo> result = new ArrayList<>();
+        List<String> orderNoList = new ArrayList<>();
         for (BbOrder bbOrder : orderList) {
             OrderVo orderVo = new OrderVo();
             orderVo.setOrderNo(bbOrder.getOrderNo());
@@ -117,14 +148,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<BbOrderDtl> orderDtlList = bbOrderDtlService.list(Wrappers.lambdaQuery(BbOrderDtl.class)
+                .like(StrUtil.isNotBlank(param.getProductName()),BbOrderDtl::getProductName,param.getProductName())
                 .in(BbOrderDtl::getOrderNo, orderNoList));
-        if (CollUtil.isNotEmpty(orderDtlList)){
+        if (CollUtil.isNotEmpty(orderDtlList)) {
             //根据订单编号分组
             Map<String, List<BbOrderDtl>> orderDtlGroup = orderDtlList.stream()
                     .collect(Collectors.groupingBy(BbOrderDtl::getOrderNo));
             for (OrderVo orderVo : result) {
                 String orderNo = orderVo.getOrderNo();
-                if (!orderDtlGroup.containsKey(orderNo)){
+                if (!orderDtlGroup.containsKey(orderNo)) {
+                    result.remove(orderVo);
                     continue;
                 }
                 List<BbOrderDtl> orderDtls = orderDtlGroup.get(orderNo);
@@ -140,39 +173,14 @@ public class OrderServiceImpl implements OrderService {
         BbOrder one = bbOrderService.getOne(Wrappers.lambdaQuery(BbOrder.class)
                 .eq(BbOrder::getCreatorBy, openId)
                 .eq(BbOrder::getOrderNo, param.getOrderNo()));
-        Assert.notNull(one,"订单不存在");
-        if (Objects.nonNull(one.getScore())){
+        Assert.notNull(one, "订单不存在");
+        if (Objects.nonNull(one.getScore())) {
             throw new RuntimeException("不可以重复评分");
         }
         bbOrderService.update(Wrappers.lambdaUpdate(BbOrder.class)
-                .eq(BbOrder::getCreatorBy,openId)
-                .eq(BbOrder::getOrderNo,param.getOrderNo())
-                .set(BbOrder::getScore,param.getScore()));
-    }
-
-
-    private void pushMessage(String openId){
-        System.out.println("pushMessage run .....");
-        JSONObject body=new JSONObject();
-        body.set("template_id","RmmTiWca_3Y8eiMFTMAnqlenb4S71t2XRd7NdEw4tAI");
-        body.set("touser",openId);
-        body.set("miniprogram_state","developer");
-        body.set("lang","zh_CN");
-        JSONObject data=new JSONObject();
-        data.set("character_string1", new JSONObject().set("value", "1224213132"));
-        data.set("thing2", new JSONObject().set("value", "测试"));
-        data.set("time4", new JSONObject().set("value", "15:01"));
-        data.set("phrase5", new JSONObject().set("value", "已接单"));
-        data.set("thing9", new JSONObject().set("value", "测试"));
-        body.set("data",data);
-
-        log.info("请求数据=[{}]",body.toString());
-        HttpResponse response = HttpRequest.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send")
-                .body(body.toString())
-                .execute();
-        log.info("pushMessage result= [{}]",response.body());
-
-        System.out.println(response.body());
+                .eq(BbOrder::getCreatorBy, openId)
+                .eq(BbOrder::getOrderNo, param.getOrderNo())
+                .set(BbOrder::getScore, param.getScore()));
     }
 
 

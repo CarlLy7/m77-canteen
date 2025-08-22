@@ -3,6 +3,7 @@ package com.tencent.wxcloudrun.controller;
 import com.tencent.wxcloudrun.config.ApiResponse;
 import com.tencent.wxcloudrun.domain.param.CreateScoreParam;
 import com.tencent.wxcloudrun.domain.param.OrderCreateParam;
+import com.tencent.wxcloudrun.domain.param.OrderQueryParam;
 import com.tencent.wxcloudrun.domain.vo.OrderVo;
 import com.tencent.wxcloudrun.service.OrderService;
 import org.springframework.util.Assert;
@@ -43,13 +44,14 @@ public class OrderController {
     /**
      * 查询订单列表
      * @param request
+     * @param param
      * @return
      */
     @GetMapping("/getOrder")
-    public ApiResponse getOrder(HttpServletRequest request){
+    public ApiResponse getOrder(HttpServletRequest request, OrderQueryParam param){
         String openId = request.getHeader("X-WX-OPENID");
         Assert.hasText(openId,"请求头中不包含openId");
-        List<OrderVo> list=orderService.getOrder(openId);
+        List<OrderVo> list=orderService.getOrder(openId,param);
         return ApiResponse.ok(list);
     }
 
