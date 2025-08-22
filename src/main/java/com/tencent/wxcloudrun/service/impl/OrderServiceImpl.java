@@ -154,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void pushMessage(String openId){
         System.out.println("pushMessage run .....");
-        HttpRequest request = HttpRequest.get("/wxaapi/newtmpl/gettemplate");
+        HttpRequest request = HttpRequest.get("https://api.weixin.qq.com/wxaapi/newtmpl/gettemplate");
         HttpResponse httpResponse = request.execute();
         JSONObject body = JSONUtil.parseObj(httpResponse.body());
         System.out.println(httpResponse.body());
