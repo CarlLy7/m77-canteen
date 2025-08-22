@@ -15,3 +15,7 @@ spring:
 
 mybatis:
   mapper-locations: classpath*:mapper/*Mapper.xml
+
+
+order:
+  createTemplateId: RmmTiWca_3Y8eiMFTMAnqlenb4S71t2XRd7NdEw4tAI

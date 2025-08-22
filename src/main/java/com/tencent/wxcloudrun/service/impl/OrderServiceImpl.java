@@ -4,6 +4,11 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tencent.wxcloudrun.domain.convert.OrderConvert;
@@ -14,20 +19,22 @@ import com.tencent.wxcloudrun.domain.vo.OrderDtlVo;
 import com.tencent.wxcloudrun.domain.vo.OrderVo;
 import com.tencent.wxcloudrun.model.BbOrder;
 import com.tencent.wxcloudrun.model.BbOrderDtl;
+import com.tencent.wxcloudrun.model.BbUserSubscribe;
 import com.tencent.wxcloudrun.service.OrderService;
 import com.tencent.wxcloudrun.service.base.BbOrderDtlService;
 import com.tencent.wxcloudrun.service.base.BbOrderService;
+import com.tencent.wxcloudrun.service.base.BbUserSubscribeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +51,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Resource
     private BbOrderDtlService bbOrderDtlService;
+
+    @Value("${order.createTemplateId}")
+    private String templateId;
+
+    @Resource
+    private BbUserSubscribeService bbUserSubscribeService;
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -69,6 +84,13 @@ public class OrderServiceImpl implements OrderService {
         }
         bbOrderService.save(bbOrder);
         bbOrderDtlService.saveBatch(orderDtls);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                pushMessage(openId);
+            }
+        });
     }
 
     @Override
@@ -126,6 +148,27 @@ public class OrderServiceImpl implements OrderService {
                 .eq(BbOrder::getCreatorBy,openId)
                 .eq(BbOrder::getOrderNo,param.getOrderNo())
                 .set(BbOrder::getScore,param.getScore()));
+    }
+
+
+    private void pushMessage(String openId){
+        long count = bbUserSubscribeService.count(Wrappers.lambdaQuery(BbUserSubscribe.class)
+                .eq(BbUserSubscribe::getOpenId, openId)
+                .eq(BbUserSubscribe::getTemplateId, templateId));
+        if (count==0){
+            return;
+        }
+        //有人订阅才会发送消息
+        Map<String,Object> param=new HashMap<>();
+        param.put("tid",templateId);
+        HttpRequest request = HttpRequest.get("https://api.weixin.qq.com/wxaapi/newtmpl/getpubtemplatekeywords").form(param);
+        HttpResponse httpResponse = request.execute();
+        JSONObject body = JSONUtil.parseObj(httpResponse.body());
+        log.info("getpubtemplatekeywords result= [{}]",body);
+        if (Objects.equals(0,body.get("errcode",Integer.class))){
+            JSONArray data = body.getJSONArray("data");
+
+        }
     }
 
 
