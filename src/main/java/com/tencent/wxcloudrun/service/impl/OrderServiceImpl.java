@@ -7,7 +7,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tencent.wxcloudrun.domain.convert.OrderConvert;
@@ -154,10 +153,24 @@ public class OrderServiceImpl implements OrderService {
 
     private void pushMessage(String openId){
         System.out.println("pushMessage run .....");
-        HttpRequest request = HttpRequest.get("https://api.weixin.qq.com/wxaapi/newtmpl/gettemplate");
-        HttpResponse httpResponse = request.execute();
-        JSONObject body = JSONUtil.parseObj(httpResponse.body());
-        System.out.println(httpResponse.body());
+        JSONObject body=new JSONObject();
+        body.set("template_id","RmmTiWca_3Y8eiMFTMAnqlenb4S71t2XRd7NdEw4tAI");
+        body.set("touser",openId);
+        body.set("miniprogram_state","developer");
+        body.set("lang","zh_CN");
+        JSONObject data=new JSONObject();
+        data.set("character_string1","dingdanhaoma111");
+        data.set("thing2","测试");
+        data.set("time4","15:01");
+        data.set("phrase5","已接单");
+        data.set("thing9","测试");
+        body.set("data",data);
+        HttpResponse response = HttpRequest.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send")
+                .body(body.toString())
+                .execute();
+        log.info("pushMessage result= [{}]",response.body());
+
+        System.out.println(response.body());
     }
 
 
