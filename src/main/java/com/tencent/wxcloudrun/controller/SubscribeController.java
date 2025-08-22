@@ -28,7 +28,7 @@ public class SubscribeController {
      * @param templateId
      * @return
      */
-    @GetMapping("save")
+    @GetMapping("/save")
     public ApiResponse save(HttpServletRequest request,@RequestParam("templateId") String templateId){
         String openId = request.getHeader("X-WX-OPENID");
         Assert.hasText(openId,"请求头中不包含openId");
