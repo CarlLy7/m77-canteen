@@ -132,23 +132,26 @@ public class OrderServiceImpl implements OrderService {
         queryWrapper.ge("DATE_FORMAT(create_time,'%Y-%m-%d')", oneMonthBefore);
         queryWrapper.le("DATE_FORMAT(create_time,'%Y-%m-%d')", today);
         queryWrapper.eq(StrUtil.isNotBlank(param.getOrderNo()),"order_no",param.getOrderNo());
+        if (StrUtil.isNotBlank(param.getProductName())) {
+            queryWrapper.exists(" select 1 from bb_order_dtl d where d.order_no=bb_order.order_no " +
+                    " and d.product_name like {0} ", "%" + param.getProductName() + "%");
+        }
         List<BbOrder> orderList = bbOrderService.list(queryWrapper);
         if (CollUtil.isEmpty(orderList)) {
             return new ArrayList<>();
         }
         List<OrderVo> result = new ArrayList<>();
-        List<String> orderNoList = new ArrayList<>();
         for (BbOrder bbOrder : orderList) {
             OrderVo orderVo = new OrderVo();
             orderVo.setOrderNo(bbOrder.getOrderNo());
             orderVo.setCreateTime(bbOrder.getCreateTime());
             orderVo.setScore(bbOrder.getScore());
-            orderNoList.add(bbOrder.getOrderNo());
             result.add(orderVo);
         }
 
+        //查询子表
+        List<String> orderNoList = orderList.stream().map(BbOrder::getOrderNo).collect(Collectors.toList());
         List<BbOrderDtl> orderDtlList = bbOrderDtlService.list(Wrappers.lambdaQuery(BbOrderDtl.class)
-                .like(StrUtil.isNotBlank(param.getProductName()),BbOrderDtl::getProductName,param.getProductName())
                 .in(BbOrderDtl::getOrderNo, orderNoList));
         if (CollUtil.isNotEmpty(orderDtlList)) {
             //根据订单编号分组
@@ -157,7 +160,6 @@ public class OrderServiceImpl implements OrderService {
             for (OrderVo orderVo : result) {
                 String orderNo = orderVo.getOrderNo();
                 if (!orderDtlGroup.containsKey(orderNo)) {
-                    result.remove(orderVo);
                     continue;
                 }
                 List<BbOrderDtl> orderDtls = orderDtlGroup.get(orderNo);
