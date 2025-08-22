@@ -164,6 +164,8 @@ public class OrderServiceImpl implements OrderService {
                 List<OrderDtlVo> orderDtlVos = OrderConvert.INSTANCE.bbOrderDtlsToBbOrderDtls(orderDtls);
                 orderVo.setItems(orderDtlVos);
             }
+        }else{
+            return new ArrayList<>();
         }
         return result;
     }
