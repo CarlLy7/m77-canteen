@@ -6,7 +6,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,7 +18,6 @@ import com.tencent.wxcloudrun.domain.vo.OrderDtlVo;
 import com.tencent.wxcloudrun.domain.vo.OrderVo;
 import com.tencent.wxcloudrun.model.BbOrder;
 import com.tencent.wxcloudrun.model.BbOrderDtl;
-import com.tencent.wxcloudrun.model.BbUserSubscribe;
 import com.tencent.wxcloudrun.service.OrderService;
 import com.tencent.wxcloudrun.service.base.BbOrderDtlService;
 import com.tencent.wxcloudrun.service.base.BbOrderService;
@@ -32,7 +30,10 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -152,23 +153,10 @@ public class OrderServiceImpl implements OrderService {
 
 
     private void pushMessage(String openId){
-        long count = bbUserSubscribeService.count(Wrappers.lambdaQuery(BbUserSubscribe.class)
-                .eq(BbUserSubscribe::getOpenId, openId)
-                .eq(BbUserSubscribe::getTemplateId, templateId));
-        if (count==0){
-            return;
-        }
-        //有人订阅才会发送消息
-        Map<String,Object> param=new HashMap<>();
-        param.put("tid",templateId);
-        HttpRequest request = HttpRequest.get("https://api.weixin.qq.com/wxaapi/newtmpl/getpubtemplatekeywords").form(param);
+        HttpRequest request = HttpRequest.get("/wxaapi/newtmpl/gettemplate");
         HttpResponse httpResponse = request.execute();
         JSONObject body = JSONUtil.parseObj(httpResponse.body());
-        log.info("getpubtemplatekeywords result= [{}]",body);
-        if (Objects.equals(0,body.get("errcode",Integer.class))){
-            JSONArray data = body.getJSONArray("data");
-
-        }
+        log.info("getMessageTemplateList result= [{}]",body);
     }
 
 
