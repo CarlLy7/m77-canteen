@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @description:
@@ -40,8 +42,11 @@ public class SubscribeController {
         List<BbUserSubscribe> subscribeList = bbUserSubscribeService.list(Wrappers.lambdaQuery(BbUserSubscribe.class)
                 .eq(BbUserSubscribe::getOpenId, openId)
                 .in(BbUserSubscribe::getTemplateId, templateIds));
+        Set<String> subScribeTemplateIdSet = subscribeList.stream()
+                .map(BbUserSubscribe::getTemplateId)
+                .collect(Collectors.toSet());
         for (String templateId : templateIds) {
-            if (subscribeList.contains(templateId)){
+            if (subScribeTemplateIdSet.contains(templateId)){
                 continue;
             }
             BbUserSubscribe bbUserSubscribe = new BbUserSubscribe();
