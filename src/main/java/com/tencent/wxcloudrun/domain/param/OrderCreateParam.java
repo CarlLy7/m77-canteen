@@ -14,6 +14,13 @@ import java.util.List;
  */
 @Data
 public class OrderCreateParam {
+
+    /**
+     * 主厨id
+     */
+    @NotNull(message = "主厨不可以为空")
+    private Integer canteenId;
+
     @NotNull(message = "子项不能为空")
     @NotEmpty(message = "子项不能为空")
     private List<OrderItemParam> items;

@@ -78,6 +78,7 @@ public class OrderServiceImpl implements OrderService {
         bbOrder.setOrderNo(orderNo);
         bbOrder.setCreateTime(LocalDateTime.now());
         bbOrder.setCreatorBy(openId);
+        bbOrder.setCanteenId(param.getCanteenId());
         List<BbOrderDtl> orderDtls = new ArrayList<>();
         for (OrderItemParam item : items) {
             BbOrderDtl bbOrderDtl = new BbOrderDtl();
