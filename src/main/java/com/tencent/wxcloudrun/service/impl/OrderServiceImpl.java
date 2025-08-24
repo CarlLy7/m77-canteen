@@ -117,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
         JSONObject body = new JSONObject();
         body.set("template_id", templateId);
         body.set("touser", openId);
-        body.set("miniprogram_state", "developer");
+        body.set("miniprogram_state", "formal");
         body.set("page","/pages/order/order?orderNo="+orderNo);
         body.set("lang", "zh_CN");
         JSONObject data = new JSONObject();
@@ -154,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
         JSONObject body = new JSONObject();
         body.set("template_id", cookerTemplateId);
         body.set("touser", cookerInfo.getOpenId());
-        body.set("miniprogram_state", "developer");
+        body.set("miniprogram_state", "formal");
         body.set("page","/pages/order/order?orderNo="+orderNo);
         body.set("lang", "zh_CN");
         JSONObject data = new JSONObject();
@@ -185,6 +185,7 @@ public class OrderServiceImpl implements OrderService {
             queryWrapper.exists(" select 1 from bb_order_dtl d where d.order_no=bb_order.order_no " +
                     " and d.product_name like {0} ", "%" + param.getProductName() + "%");
         }
+        queryWrapper.orderByDesc("create_time");
         List<BbOrder> orderList = bbOrderService.list(queryWrapper);
         if (CollUtil.isEmpty(orderList)) {
             return new ArrayList<>();
