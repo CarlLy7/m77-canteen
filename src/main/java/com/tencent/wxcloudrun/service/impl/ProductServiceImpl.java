@@ -40,33 +40,37 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductVo> getProduct(ProductQueryParam param) {
+        //查询商品分类
+        List<BbCategory> categoryList = bbCategoryService.list(Wrappers.lambdaQuery(BbCategory.class)
+                .eq(Objects.nonNull(param.getCanteenId()),BbCategory::getCanteenId,param.getCanteenId())
+                .orderByAsc(BbCategory::getSort));
+        if (CollUtil.isEmpty(categoryList)){
+            return new ArrayList<>();
+        }
+        List<ProductVo> result = BeanUtil.copyToList(categoryList, ProductVo.class);
+        //查询商品
         List<BbProduct> productList = bbProductService.list(Wrappers.lambdaQuery(BbProduct.class)
                 .like(StrUtil.isNotBlank(param.getProductName()),BbProduct::getProductName,param.getProductName())
                 .eq(Objects.nonNull(param.getCanteenId()),BbProduct::getCanteenId,param.getCanteenId())
                 .orderByAsc(BbProduct::getSort));
-        List<ProductVo> result = new ArrayList<>();
-        if (CollUtil.isNotEmpty(productList)) {
-            List<ProductDtlVo> productDtlVos = BeanUtil.copyToList(productList, ProductDtlVo.class);
-            Map<Integer, List<ProductDtlVo>> productDtlVoGroup = productDtlVos.stream()
-                    .collect(Collectors.groupingBy(ProductDtlVo::getCategoryId));
-            List<BbCategory> categoryList = bbCategoryService.list(Wrappers.lambdaQuery(BbCategory.class)
-                    .orderByAsc(BbCategory::getSort));
-            if (CollUtil.isNotEmpty(categoryList)) {
-                Map<Integer, BbCategory> categoryMap = categoryList.stream()
-                        .collect(Collectors.toMap(BbCategory::getCategoryId, obj -> obj));
-                for (Map.Entry<Integer, List<ProductDtlVo>> entry : productDtlVoGroup.entrySet()) {
-                    ProductVo productVo = new ProductVo();
-                    Integer categoryId = entry.getKey();
-                    if (!categoryMap.containsKey(categoryId)) {
-                        continue;
-                    }
-                    productVo.setCategoryId(categoryId);
-                    productVo.setCategoryName(categoryMap.get(categoryId).getCategoryName());
-                    productVo.setDtls(entry.getValue());
-                    result.add(productVo);
-                }
-            }
+        if (CollUtil.isEmpty(productList)){
+            return result;
         }
+
+        Map<Integer, ProductVo> productVoMap = result.stream()
+                .collect(Collectors.toMap(ProductVo::getCategoryId, obj -> obj));
+
+        Map<Integer, List<BbProduct>> productGroup = productList.stream()
+                .collect(Collectors.groupingBy(BbProduct::getCategoryId));
+
+        for (Map.Entry<Integer, ProductVo> entry : productVoMap.entrySet()) {
+            Integer categoryId = entry.getKey();
+            if (!productGroup.containsKey(categoryId)){
+                continue;
+            }
+            entry.getValue().setDtls(BeanUtil.copyToList(productGroup.get(categoryId),ProductDtlVo.class));
+        }
+
         return result;
     }
 }
