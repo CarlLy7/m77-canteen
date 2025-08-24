@@ -17,11 +17,15 @@ import com.tencent.wxcloudrun.domain.param.OrderItemParam;
 import com.tencent.wxcloudrun.domain.param.OrderQueryParam;
 import com.tencent.wxcloudrun.domain.vo.OrderDtlVo;
 import com.tencent.wxcloudrun.domain.vo.OrderVo;
+import com.tencent.wxcloudrun.model.BbCanteenInfo;
 import com.tencent.wxcloudrun.model.BbOrder;
 import com.tencent.wxcloudrun.model.BbOrderDtl;
+import com.tencent.wxcloudrun.model.BbUser;
 import com.tencent.wxcloudrun.service.OrderService;
+import com.tencent.wxcloudrun.service.base.BbCanteenInfoService;
 import com.tencent.wxcloudrun.service.base.BbOrderDtlService;
 import com.tencent.wxcloudrun.service.base.BbOrderService;
+import com.tencent.wxcloudrun.service.base.BbUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -53,10 +57,17 @@ public class OrderServiceImpl implements OrderService {
     @Resource
     private BbOrderDtlService bbOrderDtlService;
 
+    @Resource
+    private BbUserService bbUserService;
+
+    @Resource
+    private BbCanteenInfoService bbCanteenInfoService;
+
     @Value("${order.createTemplateId}")
     private String templateId;
 
-
+    @Value("${order.cookerTemplateId}")
+    private String cookerTemplateId;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -86,7 +97,10 @@ public class OrderServiceImpl implements OrderService {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
+                //推送消息给用户
                 pushMessage(openId, orderNo, param.getItems().get(0));
+                //推送消息给商家
+                pushMessageToCooker(openId, orderNo, param.getItems().get(0));
             }
         });
     }
@@ -97,7 +111,6 @@ public class OrderServiceImpl implements OrderService {
      * @param openId
      * @param orderNo
      * @param orderItem
-     * @param createTime
      */
     private void pushMessage(String openId, String orderNo, OrderItemParam orderItem) {
         JSONObject body = new JSONObject();
@@ -120,7 +133,42 @@ public class OrderServiceImpl implements OrderService {
                 .execute();
         log.info("pushMessage result= [{}]", response.body());
 
-        System.out.println(response.body());
+    }
+
+    /**
+     * 给商家推送消息
+     * @param openId
+     * @param orderNo
+     * @param orderItem
+     */
+    private void pushMessageToCooker(String openId, String orderNo, OrderItemParam orderItem){
+        BbUser user = bbUserService.getOne(Wrappers.lambdaQuery(BbUser.class)
+                .eq(BbUser::getOpenId, openId));
+        Assert.notNull(user,"用户不存在");
+        //查询对应的主厨openId
+        BbCanteenInfo cookerInfo = bbCanteenInfoService.getById(orderItem.getCanteenId());
+        Assert.notNull(cookerInfo,"主厨不存在");
+
+        String nickName = user.getNickName();
+        JSONObject body = new JSONObject();
+        body.set("template_id", cookerTemplateId);
+        body.set("touser", cookerInfo.getOpenId());
+        body.set("miniprogram_state", "developer");
+        body.set("page","/pages/order/order?orderNo="+orderNo);
+        body.set("lang", "zh_CN");
+        JSONObject data = new JSONObject();
+        data.set("thing8", new JSONObject().set("value", nickName));
+        data.set("character_string5", new JSONObject().set("value", orderNo));
+        String content = orderItem.getProductName() + "x" + orderItem.getCountNum();
+        data.set("thing4", new JSONObject().set("value", content));
+        data.set("date2", new JSONObject().set("value", DateUtil.format(DateUtil.date(), "yyyy年MM月dd日 HH:mm")));
+        data.set("thing3", new JSONObject().set("value", "宝宝肚肚打雷了"));
+        body.set("data", data);
+        log.info("请求数据=[{}]", body.toString());
+        HttpResponse response = HttpRequest.post("https://api.weixin.qq.com/cgi-bin/message/subscribe/send")
+                .body(body.toString())
+                .execute();
+        log.info("pushMessageToCooker result= [{}]", response.body());
     }
 
     @Override

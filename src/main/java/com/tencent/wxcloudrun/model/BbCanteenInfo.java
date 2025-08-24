@@ -4,38 +4,32 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
 import java.io.Serializable;
+import lombok.Data;
 
 /**
  * 
- * @TableName bb_category
+ * @TableName bb_canteen_info
  */
-@TableName(value ="bb_category")
+@TableName(value ="bb_canteen_info")
 @Data
-public class BbCategory implements Serializable {
+public class BbCanteenInfo implements Serializable {
     /**
      * 
      */
     @TableId(type = IdType.AUTO)
-    private Integer categoryId;
+    private Integer id;
 
     /**
      * 
      */
-    private String categoryName;
-
-    private Integer sort;
+    private String openId;
 
     /**
-     * 主厨id
+     * 主厨名称
      */
-    private Integer canteenId;
-
+    private String canteenName;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
-
 }

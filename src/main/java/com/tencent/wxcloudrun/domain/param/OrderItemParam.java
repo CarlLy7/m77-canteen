@@ -34,5 +34,11 @@ public class OrderItemParam {
     @NotNull(message = "商品价格不能为空")
     private BigDecimal price;
 
+    /**
+     * 主厨id
+     */
+    @NotNull(message = "主厨id不能为空")
+    private Integer canteenId;
+
 
 }

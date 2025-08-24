@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductVo> getProduct(ProductQueryParam param) {
         List<BbProduct> productList = bbProductService.list(Wrappers.lambdaQuery(BbProduct.class)
                 .like(StrUtil.isNotBlank(param.getProductName()),BbProduct::getProductName,param.getProductName())
+                .eq(Objects.nonNull(param.getCanteenId()),BbProduct::getCanteenId,param.getCanteenId())
                 .orderByAsc(BbProduct::getSort));
         List<ProductVo> result = new ArrayList<>();
         if (CollUtil.isNotEmpty(productList)) {

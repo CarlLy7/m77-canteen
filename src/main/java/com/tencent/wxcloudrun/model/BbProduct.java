@@ -44,6 +44,11 @@ public class BbProduct implements Serializable {
 
     private Integer sort;
 
+    /**
+     * 主厨id
+     */
+    private Integer canteenId;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

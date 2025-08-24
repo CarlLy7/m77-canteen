@@ -19,6 +19,7 @@ mybatis:
 
 order:
   createTemplateId: RmmTiWca_3Y8eiMFTMAnqlenb4S71t2XRd7NdEw4tAI
+  cookerTemplateId: fCDLBKPd3JTa9LXuHgy7iCTVrJMOoOX5LVAqaGeZdyE
 
 logging:
   config: classpath:logback-plus.xml

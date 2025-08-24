@@ -2,13 +2,16 @@ package com.tencent.wxcloudrun.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.tencent.wxcloudrun.config.ApiResponse;
+import com.tencent.wxcloudrun.domain.param.SubScribeParam;
 import com.tencent.wxcloudrun.model.BbUserSubscribe;
 import com.tencent.wxcloudrun.service.base.BbUserSubscribeService;
 import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @description:
@@ -25,23 +28,27 @@ public class SubscribeController {
     /**
      * 用户订阅信息保存
      * @param request
-     * @param templateId
+     * @param param
      * @return
      */
-    @GetMapping("/save")
-    public ApiResponse save(HttpServletRequest request,@RequestParam("templateId") String templateId){
+    @PostMapping("/save")
+    public ApiResponse save(HttpServletRequest request, @RequestBody @Validated SubScribeParam param){
         String openId = request.getHeader("X-WX-OPENID");
         Assert.hasText(openId,"请求头中不包含openId");
-        long count = bbUserSubscribeService.count(Wrappers.lambdaQuery(BbUserSubscribe.class)
+        List<String> templateIds = param.getTemplateIds();
+        //已经订阅的
+        List<BbUserSubscribe> subscribeList = bbUserSubscribeService.list(Wrappers.lambdaQuery(BbUserSubscribe.class)
                 .eq(BbUserSubscribe::getOpenId, openId)
-                .eq(BbUserSubscribe::getTemplateId, templateId));
-        if (count>0){
-            return ApiResponse.ok();
+                .in(BbUserSubscribe::getTemplateId, templateIds));
+        for (String templateId : templateIds) {
+            if (subscribeList.contains(templateId)){
+                continue;
+            }
+            BbUserSubscribe bbUserSubscribe = new BbUserSubscribe();
+            bbUserSubscribe.setOpenId(openId);
+            bbUserSubscribe.setTemplateId(templateId);
+            bbUserSubscribeService.save(bbUserSubscribe);
         }
-        BbUserSubscribe bbUserSubscribe = new BbUserSubscribe();
-        bbUserSubscribe.setOpenId(openId);
-        bbUserSubscribe.setTemplateId(templateId);
-        bbUserSubscribeService.save(bbUserSubscribe);
         return ApiResponse.ok();
     }
 

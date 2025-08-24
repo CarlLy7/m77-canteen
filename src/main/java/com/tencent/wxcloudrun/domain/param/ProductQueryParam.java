@@ -14,4 +14,9 @@ public class ProductQueryParam {
      * 商品名称
      */
     private String productName;
+
+    /**
+     * 主厨id
+     */
+    private Integer canteenId;
 }

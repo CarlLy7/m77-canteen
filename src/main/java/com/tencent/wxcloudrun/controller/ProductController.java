@@ -29,7 +29,6 @@ public class ProductController {
      */
     @GetMapping("/getProduct")
     public ApiResponse getProduct(ProductQueryParam param){
-        //TODO 后续可能要根据商家进行区分
         List<ProductVo> list=productService.getProduct(param);
         return ApiResponse.ok(list);
     }
